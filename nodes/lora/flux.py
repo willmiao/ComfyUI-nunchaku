@@ -114,9 +114,13 @@ class NunchakuFluxLoraLoader:
 
         transformer = model_wrapper.model
         model_wrapper.model = None
-        ret_model = copy.deepcopy(model)  # copy everything except the model
+
+        ret_model = model.clone()
+        ret_model.model = copy.copy(ret_model.model)
+        ret_model.model.diffusion_model = copy.copy(ret_model.model.diffusion_model)
         ret_model_wrapper = ret_model.model.diffusion_model
         assert isinstance(ret_model_wrapper, ComfyFluxWrapper)
+        ret_model_wrapper.loras = copy.copy(ret_model_wrapper.loras)
 
         model_wrapper.model = transformer
         ret_model_wrapper.model = transformer
@@ -134,6 +138,8 @@ class NunchakuFluxLoraLoader:
 
             old_in_channels = ret_model.model.model_config.unet_config["in_channels"]
             if old_in_channels < new_in_channels:
+                ret_model.model.model_config = copy.copy(ret_model.model.model_config)
+                ret_model.model.model_config.unet_config = copy.copy(ret_model.model.model_config.unet_config)
                 ret_model.model.model_config.unet_config["in_channels"] = new_in_channels
 
         return (ret_model,)
@@ -259,7 +265,10 @@ class NunchakuFluxLoraStack:
 
         transformer = model_wrapper.model
         model_wrapper.model = None
-        ret_model = copy.deepcopy(model)  # copy everything except the model
+
+        ret_model = model.clone()
+        ret_model.model = copy.copy(ret_model.model)
+        ret_model.model.diffusion_model = copy.copy(ret_model.model.diffusion_model)
         ret_model_wrapper = ret_model.model.diffusion_model
         assert isinstance(ret_model_wrapper, ComfyFluxWrapper)
 
@@ -287,6 +296,8 @@ class NunchakuFluxLoraStack:
 
         # Update the model's input channels
         if max_in_channels > ret_model.model.model_config.unet_config["in_channels"]:
+            ret_model.model.model_config = copy.copy(ret_model.model.model_config)
+            ret_model.model.model_config.unet_config = copy.copy(ret_model.model.model_config.unet_config)
             ret_model.model.model_config.unet_config["in_channels"] = max_in_channels
 
         return (ret_model,)
